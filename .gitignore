@@ -1,1 +1,5 @@
 *.exe
+build/
+woodpecker.log
+woodpecker.spec
+woodpecker.zip

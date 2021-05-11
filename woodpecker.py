@@ -2,12 +2,12 @@
 # Woodpecker
 # ------------------
 # Author: Wolfson Liu
-# Date: 2018.06.04
-# Version: 0.2.2018.06.04
+# Date: 2021.05.11
+# Version: 0.2.2
 # Description:
 #    Used for dowloading multiple papers in GUI.
 # ------------------
-__version__ = '0.1.2017.12.11'
+__version__ = '0.2.2'
 
 import os
 import bs4
@@ -27,13 +27,15 @@ class ArticleNotFound(ValueError):
 # ------------------
 
 
-
 def getscihub():
     scihubs = [
         'http://www.sci-hub.tw/',
         'http://www.sci-hub.hk/',
         'http://www.sci-hub.cc/',
         'http://www.sci-hub.bz/',
+        'http://sci-hub.se',
+        'http://sci-hub.st',
+        'http://sci-hub.do',
     ]
 
     for sh in scihubs:
@@ -60,6 +62,7 @@ def scihub_pdfurl(doi, scihub):
         ).get('src').lstrip('/')
 
 # ------------------
+
 
 def textbox(master, label, width, textwrap, row, column):
     # make the text box with x and y scrollbar
@@ -97,12 +100,14 @@ def textbox(master, label, width, textwrap, row, column):
 
 # ------------------
 
+
 def massagebox(master, text):
     mb = tk.Toplevel(master)
     text = tk.Label(mb, text=text)
     text.pack()
 
 # ------------------
+
 
 def logbox(master, label, text):
     lb = tk.Toplevel(master)
@@ -118,7 +123,9 @@ class Woodpecker(tk.Frame):
         super().__init__(master)
         self.pack()
         scihub_entry_frame = tk.Frame(self)
-        scihub_entry_frame.grid(row=0, column=0, ipadx=2, ipady=2, padx=2, pady=2)
+        scihub_entry_frame.grid(
+            row=0, column=0, ipadx=2, ipady=2, padx=2, pady=2
+        )
         self.scihub_label = tk.Label(
             scihub_entry_frame, text='Sci-Hub 网址'
         )
@@ -134,7 +141,9 @@ class Woodpecker(tk.Frame):
             row=1, column=0
         )
         path_entry_frame = tk.Frame(self)
-        path_entry_frame.grid(row=2, column=0, ipadx=2, ipady=2, padx=2, pady=2)
+        path_entry_frame.grid(
+            row=2, column=0, ipadx=2, ipady=2, padx=2, pady=2
+        )
         self.path_label = tk.Label(
             path_entry_frame, text='保存路径'
         )
@@ -159,7 +168,9 @@ class Woodpecker(tk.Frame):
         self.data['scihub'] = self.scihub_entry.get()
         if self.data['scihub'] == '':
             self.data['scihub'] = getscihub()
-        elif (self.data['scihub'].find('http://') < 0) and (self.data['scihub'].find('https://') < 0):
+        elif (
+                self.data['scihub'].find('http://') < 0
+        ) and (self.data['scihub'].find('https://') < 0):
             self.data['scihub'] = 'https://' + self.data['scihub']
             self.data['scihub'] = self.data['scihub'].replace('www.', '')
         print(self.data['scihub'])
@@ -168,7 +179,10 @@ class Woodpecker(tk.Frame):
             try:
                 try:
                     pdfurl = scihub_pdfurl(doi, self.data['scihub'])
-                    if (pdfurl.find('http://') < 0) and (pdfurl.find('https://') < 0):
+                    if (
+                            pdfurl.find('http://') < 0
+                    ) and (
+                        pdfurl.find('https://') < 0):
                         pdfurl = 'https://' + pdfurl
                     print(pdfurl)
                     pdf = requests.get(pdfurl)
@@ -191,7 +205,7 @@ class Woodpecker(tk.Frame):
                 except (ConnectionError, SciHubError) as e:
                     massagebox(
                         self,
-                        'Sci-Hub 无法链接，如果确定网络没有问题，那说明 Sci-Hub 暂时被封了，请下载新版本或者联系本软件作者 wolfsonliu@gmail.com。'
+                        'Sci-Hub 无法链接，如果确定网络没有问题，那说明 Sci-Hub 暂时被封了，请下载新版本或者联系本软件作者 wolfsonliu@live.com。'
                     )
                     break
             except ArticleNotFound:
