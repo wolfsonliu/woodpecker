@@ -2,12 +2,12 @@
 # Woodpecker
 # ------------------
 # Author: Wolfson Liu
-# Date: 2021.05.11
-# Version: 0.2.2
+# Date: 2022.06.12
+# Version: 0.2.3
 # Description:
 #    Used for dowloading multiple papers in GUI.
 # ------------------
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 import os
 import bs4
@@ -29,13 +29,10 @@ class ArticleNotFound(ValueError):
 
 def getscihub():
     scihubs = [
-        'http://www.sci-hub.tw/',
-        'http://www.sci-hub.hk/',
-        'http://www.sci-hub.cc/',
-        'http://www.sci-hub.bz/',
-        'http://sci-hub.se',
-        'http://sci-hub.st',
-        'http://sci-hub.do',
+        'https://sci-hub.se',
+        'https://sci-hub.st',
+        'https://sci-hub.do',
+        'https://sci-hub.ru',
     ]
 
     for sh in scihubs:
@@ -52,12 +49,16 @@ def scihub_pdfurl(doi, scihub):
     shpage = requests.get('/'.join([scihub.rstrip('/'), doi]))
     if shpage.status_code != 200:
         raise SciHubError('Sci-Hub website unaccessible.')
-    if shpage.text.find('article not found') > 0:
+    if shpage.url.find(doi) < 0:
+        raise ArticleNotFound()
+    elif shpage.content.decode('utf-8').find(
+            "Unfortunately, Sci-Hub doesn't have the requested document"
+    ) > 0:
         raise ArticleNotFound()
     else:
         shparse = bs4.BeautifulSoup(shpage.text)
-        return shparse.body.find(
-            'iframe',
+        return scihub.rstrip('/') + '/' + shparse.body.find(
+            'embed',
             attrs={'id': 'pdf'}
         ).get('src').lstrip('/')
 
@@ -205,7 +206,7 @@ class Woodpecker(tk.Frame):
                 except (ConnectionError, SciHubError) as e:
                     massagebox(
                         self,
-                        'Sci-Hub 无法链接，如果确定网络没有问题，那说明 Sci-Hub 暂时被封了，请下载新版本或者联系本软件作者 wolfsonliu@live.com。'
+                        'Sci-Hub 无法链接，请下载新版本 (https://github.com/wolfsonliu/woodpecker/releases) 或者联系本软件作者 wolfsonliu@live.com。'
                     )
                     break
             except ArticleNotFound:
